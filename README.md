@@ -1,4 +1,5 @@
 # pyldap
+Python script to harvest all CERN LDAP accounts using pagination (to avoid exceeding the LDAP sizelimit and get a `LDAPException`). It is accessible from inside CERN only.
 
 ## Setup
 For using `LDAP` in Python (`import ldap`) the [LDAP library interface module](http://www.python-ldap.org/download.shtml) is necessary.

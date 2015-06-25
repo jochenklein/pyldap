@@ -1,3 +1,4 @@
+import datetime
 import ldap
 from ldap.controls import SimplePagedResultsControl
 
@@ -69,6 +70,10 @@ def paged_search():
     return all_results
 
 
+t0 = datetime.datetime.now()
 all_results = paged_search()
+t1 = datetime.datetime.now()
+t_final = t1 - t0
 print "Pagesize: {0}".format(CFG_LDAP_PAGESIZE)
 print "Entries found: {0}".format(len(all_results))
+print "Time [seconds]: {0}.{1}".format(t_final.seconds, t_final.microseconds/1000)

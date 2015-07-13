@@ -7,7 +7,6 @@ CFG_CERN_LDAP_URI = "ldap://xldap.cern.ch:389"
 CFG_CERN_LDAP_BASE = "OU=Users,OU=Organic Units,DC=cern,DC=ch"
 CFG_LDAP_ATTRLIST = None
 CFG_LDAP_SEARCHFILTER = r"(objectClass=*)"
-CFG_LDAP_PAGESIZE = 250
 
 
 class LDAPError(Exception):
@@ -39,14 +38,14 @@ def _msgid(ldap_connection, req_ctrl):
         raise LDAPError("Connection failed: {0}.".format(e))
 
 
-def paged_search():
+def paged_search(pagesize=250):
     """
     Call the search function with using pagination to avoid exceeding LDAP sizelimit.
     Return a list with the LDAP objects.
     See: https://bitbucket.org/jaraco/python-ldap/src/f208b6338a28/Demo/paged_search_ext_s.py
     """
     ldap_connection = _ldap_initialize()
-    req_ctrl = SimplePagedResultsControl(True, CFG_LDAP_PAGESIZE, "")
+    req_ctrl = SimplePagedResultsControl(True, pagesize, "")
     msgid = _msgid(ldap_connection, req_ctrl)
     result_pages = 0
     all_results = []
@@ -74,6 +73,5 @@ t0 = datetime.datetime.now()
 all_results = paged_search()
 t1 = datetime.datetime.now()
 t_final = t1 - t0
-print "Pagesize: {0}".format(CFG_LDAP_PAGESIZE)
 print "Entries found: {0}".format(len(all_results))
 print "Time [seconds]: {0}.{1}".format(t_final.seconds, t_final.microseconds/1000)

@@ -9,7 +9,7 @@ class Mapper:
         """Initialize the mapper properties."""
         self.roots = []  # contains all root elements
         self.record_size = record_size  # defines amount of record elements in one root
-        self.mapper_dict = {
+        self.mapper_dict = {  # mapping definition LDAP attributes to MARC 21 authority
             "givenName": "1000_a",
             "sn": "1001_a",
             "displayName": "100__a",
@@ -24,7 +24,13 @@ class Mapper:
     def _split_marc_id(self, marc_id):
         """Seperate marc identifier which is defined in the mapper
         dictionary. Return tag, ind1, ind2 and code."""
-        return marc_id[:3], marc_id[3], marc_id[4], marc_id[-1:]
+        # MARC code is optional
+        try:
+            marc_code = marc_id[5]
+        except IndexError:
+            marc_code = None
+
+        return marc_id[:3], marc_id[3], marc_id[4], marc_code
 
     def _add_root(self):
         """Add the root element `collection` with the attribute `xmlns`.
@@ -52,7 +58,8 @@ class Mapper:
         if attr_ind2 == "_":
             attr_ind2 = " "
 
-        find = self.record.xpath("datafield[@tag=%s]" % attr_tag)
+        find = self.record.xpath(
+            "datafield[@tag=%s and @ind1='%s' and @ind2='%s']" % (attr_tag, attr_ind1, attr_ind2))
         if not find:
             return etree.SubElement(self.record, "datafield", OrderedDict({
                 "tag": attr_tag, "ind1": attr_ind1, "ind2": attr_ind2}))
@@ -88,7 +95,7 @@ class Mapper:
                 if marc_id == "035__a":
                     inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
 
-                if not marc_code == "_":
+                if marc_code:
                     self._add_subfield(elem_datafield, marc_code, inner_text)
         return self.root
 

@@ -31,8 +31,8 @@ t0 = datetime.datetime.now()
 all_results = ldap_cern.paged_search(options.pagesize)  # LDAP search with given page size
 t1 = datetime.datetime.now()
 t_final = t1 - t0
-print "Entries found: {0}".format(len(all_results))
-print "Time [seconds]: {0}.{1}".format(t_final.seconds, t_final.microseconds/1000)
+print "Entries found: {0}, Time [seconds]: {1}.{2}".format(
+    len(all_results), t_final.seconds, t_final.microseconds/1000)
 
 if options.writexml:
     mapper = Mapper(options.recordsize)  # mapper with given record size

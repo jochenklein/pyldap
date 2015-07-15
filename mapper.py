@@ -10,10 +10,10 @@ class Mapper:
         self.roots = []  # contains all root elements
         self.record_size = record_size  # defines amount of record elements in one root
         self.mapper_dict = {
-            "givenName": "100__a",
-            "sn": "1101_b",
-            "mail": "300__a",
-            "displayName": "100__x",
+            "givenName": "1000_a",
+            "sn": "1001_a",
+            "displayName": "100__a",
+            "mail": "371__m",
             "employeeID": "035__a"
         }
 

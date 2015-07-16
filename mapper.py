@@ -49,10 +49,11 @@ class Mapper:
             "tag": attr_tag}).text = text
 
     def _add_datafield(
-      self, attr_tag, attr_ind1, attr_ind2):
+      self, attr_tag, attr_ind1, attr_ind2, repeatable=False):
         """Add datafield element as a sub element to the record element and
         return it. In case a datafield with the same tag exists, the existing
-        one will be returned."""
+        one will be returned. Enable `repeatable` if you have other sources and
+        want to have repeatable datafield elements."""
         if attr_ind1 == "_":
             attr_ind1 = " "
         if attr_ind2 == "_":
@@ -60,7 +61,7 @@ class Mapper:
 
         find = self.record.xpath(
             "datafield[@tag=%s and @ind1='%s' and @ind2='%s']" % (attr_tag, attr_ind1, attr_ind2))
-        if not find:
+        if not find or repeatable:
             return etree.SubElement(self.record, "datafield", OrderedDict({
                 "tag": attr_tag, "ind1": attr_ind1, "ind2": attr_ind2}))
         return find[0]

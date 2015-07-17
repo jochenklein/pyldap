@@ -7,7 +7,8 @@ You can run the script from the terminal with optional parameters, using `$ pyth
 * `-h`, `--help`: run to see the available parameters and how to use them
 * `-p`, `--pagesize` [default: 250]: set limit for LDAP search requests to avoid sizelimit exceeded
 * `-r`, `--recordsize` [default: 500]: set limit for amount of record elements in one XML document
-* `-x`, `--writexml` [default: False]: set to write XML file(s)
+* `-x`, `--exportxml` [default: False]: set to write MARC 21-formatted XML file(s)
+* `-j`, `--exportjson` [default: False]: set to write json-formatted file
 
 Example: `$ python ldap2marc.py -r 100 -x`. Running this will fetch all LDAP records, map and write them to XML files with a limitation of 100 record elements each file.
 

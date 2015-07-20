@@ -1,5 +1,6 @@
 from lxml import etree
 from collections import OrderedDict
+import os
 
 
 class Mapper:
@@ -100,10 +101,11 @@ class Mapper:
                     self._add_subfield(elem_datafield, marc_code, inner_text)
         return self.root
 
-    def write_marcxml(self, root_node=None):
+    def write_marcxml(self, root_node=None, file="marc_output.xml"):
         """Write the XML tree to file(s)."""
         if not root_node:
             root_node = self.root
+        filename, file_extension = os.path.splitext(file)
         for i, root in enumerate(self.roots):
-            with open("marc_output_%03d.xml" % (i,), "w") as f:
+            with open("%s_%03d.xml" % (filename, i), "w") as f:
                 f.write(etree.tostring(root, pretty_print=True))

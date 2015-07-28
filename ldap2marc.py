@@ -5,7 +5,7 @@ from dictdiffer import diff, patch
 from os.path import isfile
 import ldap_cern
 from mapper import Mapper
-
+from distutils.util import strtobool
 
 parser = OptionParser()
 parser.add_option(
@@ -71,7 +71,15 @@ if options.update:
 
     if len(result_list):
         # update saved records
-        raw_input("Press 'Enter' to patch or 'Control+C' to cancel.")
-        patched = patch(result, stored)
-        with open(options.update, "w") as f:
-            json.dump(patched, f)
+        valid = {"yes": True, "y": True, "": True, "no": False, "n": False}
+        user_input = raw_input("%d change(s) found. Update %s? [Y/n]" % (len(result_list), options.update)).lower()
+
+        if user_input in valid:
+            if valid[user_input]:
+                patched = patch(result, stored)
+                with open(options.update, "w") as f:
+                    json.dump(patched, f)
+            else:
+                print "Update cancelled."
+    else:
+        print "No changes found."

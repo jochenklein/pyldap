@@ -4,13 +4,15 @@ Python script (`ldap2marc`) to harvest all CERN LDAP accounts using pagination (
 # Usage
 You can run the script from the terminal with optional parameters, using `$ python ldap2marc.py [options]`
 
-* `-h`, `--help`: run to see the available parameters and how to use them
-* `-p`, `--pagesize` [default: 250]: set limit for LDAP search requests to avoid sizelimit exceeded
-* `-r`, `--recordsize` [default: 500]: set limit for amount of record elements in one XML document
-* `-x`, `--exportxml` [default: False]: set to write MARC 21-formatted XML file(s)
-* `-j`, `--exportjson` [default: False]: set to write json-formatted file
+Options:
+* `-h`, `--help`: show this help message and exit
+* `-p PAGESIZE`, `--pagesize=PAGESIZE`: limit LDAP records for each search request to avoid exceeding sizelimit [default: 250]
+* `-r RECORDSIZE`, `--recordsize=RECORDSIZE`: limit amount of record elements for each XML file [default: 500]
+* `-x FILE`, `--exportxml=FILE`: write to XML FILE(s) based on `recordsize`
+* `-j FILE`, `--exportjson=FILE`: dump Python dictionary with records to a json-formatted FILE
+* `-u FILE`, `--update=FILE`: update stored json-formatted records with current LDAP records to FILE
 
-Example: `$ python ldap2marc.py -r 100 -x`. Running this will fetch all LDAP records, map and write them to XML files with a limitation of 100 record elements each file.
+Example: `$ python ldap2marc.py -r 100 -x output.xml`. Running this will fetch all LDAP records, map and write them to XML files with a limitation of 100 record elements each file.
 
 ## XML output
 

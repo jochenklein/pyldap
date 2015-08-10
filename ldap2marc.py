@@ -5,7 +5,6 @@ from dictdiffer import diff, patch
 from os.path import isfile
 import ldap_cern
 from mapper import Mapper
-from distutils.util import strtobool
 
 parser = OptionParser()
 parser.add_option(
@@ -14,14 +13,16 @@ parser.add_option(
     dest="pagesize",
     type="int",
     default=250,
-    help="limit LDAP records for each search request to avoid exceeding sizelimit [default: %default]")
+    help="limit LDAP records for each search request to avoid exceeding "
+         "sizelimit [default: %default]")
 parser.add_option(
     "-r",
     "--recordsize",
     dest="recordsize",
     type="int",
     default=500,
-    help="limit amount of record elements for each XML file and has to be combined with `-x FILE` [default: %default]")
+    help="limit amount of record elements for each XML file and has to be "
+         "combined with `-x FILE` [default: %default]")
 parser.add_option(
     "-x",
     "--exportxml",
@@ -42,11 +43,12 @@ parser.add_option(
     dest="update",
     type="string",
     metavar="FILE",
-    help="update stored json-formatted records with current LDAP records to FILE")
+    help="update stored json-formatted records with current LDAP records "
+         "to FILE")
 (options, args) = parser.parse_args()
 
 t0 = datetime.datetime.now()
-all_results = ldap_cern.paged_search(options.pagesize)  # LDAP search with given page size
+all_results = ldap_cern.paged_search(options.pagesize)
 t1 = datetime.datetime.now()
 t_final = t1 - t0
 print "Entries found: {0}, Time [seconds]: {1}.{2}".format(
@@ -59,20 +61,22 @@ if options.exportxml:
 
 if options.exportjson:
     with open(options.exportjson, "w") as f:
-        json.dump([x for _, x in all_results], f)
+        json.dump(all_results, f)
 
 if options.update:
     if not isfile(options.update):
         print "updating failed. file '%s' not found" % options.update
     with open(options.update) as f:
         stored = json.load(f)
-    result = diff([x for _, x in all_results], stored)
+    result = diff(all_results, stored)
     result_list = list(result)
 
     if len(result_list):
         # update saved records
         valid = {"yes": True, "y": True, "": True, "no": False, "n": False}
-        user_input = raw_input("%d change(s) found. Update %s? [Y/n]" % (len(result_list), options.update)).lower()
+        user_input = raw_input(
+            "%d change(s) found. Update %s? [Y/n]"
+            % (len(result_list), options.update)).lower()
 
         if user_input in valid:
             if valid[user_input]:

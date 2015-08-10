@@ -44,9 +44,18 @@ def _msgid(ldap_connection, req_ctrl):
 
 def paged_search(pagesize=250):
     """
-    Call the search function with using pagination to avoid exceeding LDAP sizelimit.
-    Return a list with the LDAP objects.
-    See: https://bitbucket.org/jaraco/python-ldap/src/f208b6338a28/Demo/paged_search_ext_s.py
+    Call the search function using pagination to avoid exceeding LDAP
+    sizelimit and return a list with dictionaries containing the LDAP records.
+    A LDAP record contains all attributes defined in CFG_LDAP_ATTRLIST.
+
+    Example:
+    [
+        {'mail': ['j.klein@cern.ch'],'givenName': ['Jochen'],'sn': ['Klein']},
+        {'mail': ['john.doe@cern.ch'],'givenName': ['John'],'sn': ['Doe']},
+        ...
+    ]
+
+    See https://bitbucket.org/jaraco/python-ldap/src/f208b6338a28/Demo/paged_search_ext_s.py
     """
     ldap_connection = _ldap_initialize()
     req_ctrl = SimplePagedResultsControl(True, pagesize, "")
@@ -70,4 +79,5 @@ def paged_search(pagesize=250):
                 msgid = _msgid(ldap_connection, req_ctrl)
             else:
                 break
-    return all_results
+    # return the second part of the LDAP record-data tuple only
+    return [x for _, x in all_results]

@@ -19,17 +19,19 @@ class Mapper:
             "employeeID": "035__a"
         }
 
-    def _strip(self, obj):
-        """Strip the property string and return it.
-        Using the default strip function.
+    def _strip(self, obj, strip="['']"):
+        """Using the default strip function.
+
+        :return: stripped string
         """
-        return str(obj).strip("['']")
+        return str(obj).strip(strip)
 
     def _split_marc_id(self, marc_id):
-        """Seperate MARC 21 identifier which is defined in the mapper_dict.
-        Return tag, ind1, ind2 and code.
+        """Split MARC 21 identifier which is defined in the mapper_dict.
+
+        :return: MARC 21 tag, ind1, ind2 and code
         """
-        # MARC code is optional
+        # code is optional
         try:
             marc_code = marc_id[5]
         except IndexError:
@@ -38,20 +40,25 @@ class Mapper:
         return marc_id[:3], marc_id[3], marc_id[4], marc_code
 
     def _create_root(self):
-        """Create root element 'collection' with the attribute 'xmlns' and
-        return it.
+        """Create root element 'collection' with the attribute 'xmlns'.
+
+        :return: root element
         """
         return etree.Element(
             "collection", {"xmlns": "http://www.loc.gov/MARC21/slim"})
 
     def _create_record(self, parent):
-        """Create child element 'record' of parent, and return it."""
+        """Create child element 'record' of parent.
+
+        :return: record element, child of parent
+        """
         return etree.SubElement(parent, "record")
 
     def _create_controlfield(self, parent, attr_tag, inner_text):
-        """Create child element 'controlfield' of parent and return it.
+        """Create child element 'controlfield' of parent.
 
         :param elem parent: parent element, usually 'collection'
+        :return: controlfield element, child of parent
         """
         controlfield = etree.SubElement(parent, "controlfield", {
             "tag": attr_tag})
@@ -60,11 +67,12 @@ class Mapper:
 
     def _create_datafield(
       self, parent, attr_tag, attr_ind1, attr_ind2, repeatable=False):
-        """Create child element 'datafield', add it to the record element and
-        return it.
+        """Create child element 'datafield', add it to the record element.
 
         :param elem parent: parent element, usually 'record'
         :param bool repeatable: Allows multiple datafields with same tags
+        :return: either new or existing datafield element (depending on
+            repeatable), child of parent
         """
         if attr_ind1 == "_":
             attr_ind1 = " "
@@ -81,7 +89,9 @@ class Mapper:
 
     def _create_subfield(self, parent, attr_code, inner_text):
         """Create child element 'subfield' of parent including
-        attr_code and inner_text, and return it.
+        attr_code and inner_text.
+
+        :return: subfield element, child of parent
         """
         subfield = etree.SubElement(
             parent, "subfield", {"code": attr_code})
@@ -90,7 +100,9 @@ class Mapper:
 
     def map_ldap_records(self, ldap_records):
         """Map LDAP records to MARC 21 authority records (XML).
-        Return the list of root elements.
+
+        :return: list of root elements containg N record elements,
+            N = record_size
         """
         current_root = self._create_root()
         self.roots.append(current_root)
@@ -127,7 +139,10 @@ class Mapper:
         return self.roots
 
     def write_marcxml(self, file="marc_output.xml"):
-        """Write the XML tree to file(s)."""
+        """Write the XML tree to (multiple) file(s).
+
+        :param str file: filename, suffix ('_001', '_002', ...) will be added
+        """
         filename, file_extension = os.path.splitext(file)
 
         # multiple file output

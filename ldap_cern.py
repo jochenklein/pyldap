@@ -18,7 +18,10 @@ class LDAPError(Exception):
 
 
 def _ldap_initialize():
-    """Initialize the LDAP connection and return the LDAP connection."""
+    """Initialize the LDAP connection.
+
+    :return: LDAP connection
+    """
     try:
         ldap_connection = ldap.initialize(CFG_CERN_LDAP_URI)
         ldap_connection.set_option(ldap.OPT_PROTOCOL_VERSION, 3)
@@ -29,7 +32,10 @@ def _ldap_initialize():
 
 
 def _msgid(ldap_connection, req_ctrl):
-    """Run the search request and return the `msgid`."""
+    """Run the search request using search_ext.
+
+    :return: msgid
+    """
     try:
         return ldap_connection.search_ext(
             CFG_CERN_LDAP_BASE,
@@ -43,12 +49,11 @@ def _msgid(ldap_connection, req_ctrl):
 
 
 def paged_search(pagesize=250):
-    """
-    Call the search function using pagination to avoid exceeding LDAP
+    """Call the search function using pagination to avoid exceeding LDAP
     sizelimit and return a list with dictionaries containing the LDAP records.
     A LDAP record contains all attributes defined in CFG_LDAP_ATTRLIST.
 
-    Example:
+    Example: list of LDAP records:
     [
         {'mail': ['j.klein@cern.ch'],'givenName': ['Jochen'],'sn': ['Klein']},
         {'mail': ['john.doe@cern.ch'],'givenName': ['John'],'sn': ['Doe']},

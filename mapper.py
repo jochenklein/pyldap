@@ -44,26 +44,26 @@ class Mapper:
         return etree.Element(
             "collection", {"xmlns": "http://www.loc.gov/MARC21/slim"})
 
-    def _create_record(self):
-        """Create child element 'record', add it to the root element and
-        return it.
-        """
-        return etree.SubElement(self.root, "record")
+    def _create_record(self, parent):
+        """Create child element 'record' of parent, and return it."""
+        return etree.SubElement(parent, "record")
 
-    def _create_controlfield(self, attr_tag, inner_text):
-        """Create child element 'controlfield', add it to the root element and
-        return it.
+    def _create_controlfield(self, parent, attr_tag, inner_text):
+        """Create child element 'controlfield' of parent and return it.
+
+        :param elem parent: parent element, usually 'collection'
         """
-        controlfield = etree.SubElement(self.root, "controlfield", {
+        controlfield = etree.SubElement(parent, "controlfield", {
             "tag": attr_tag})
         controlfield.text = inner_text
         return controlfield
 
     def _create_datafield(
-      self, attr_tag, attr_ind1, attr_ind2, repeatable=False):
+      self, parent, attr_tag, attr_ind1, attr_ind2, repeatable=False):
         """Create child element 'datafield', add it to the record element and
         return it.
 
+        :param elem parent: parent element, usually 'record'
         :param bool repeatable: Allows multiple datafields with same tags
         """
         if attr_ind1 == "_":
@@ -71,20 +71,20 @@ class Mapper:
         if attr_ind2 == "_":
             attr_ind2 = " "
 
-        find = self.record.xpath(
+        find = parent.xpath(
             "datafield[@tag=%s and @ind1='%s' and @ind2='%s']"
             % (attr_tag, attr_ind1, attr_ind2))
         if not find or repeatable:
-            return etree.SubElement(self.record, "datafield", OrderedDict({
+            return etree.SubElement(parent, "datafield", OrderedDict({
                 "tag": attr_tag, "ind1": attr_ind1, "ind2": attr_ind2}))
         return find[0]
 
-    def _create_subfield(self, elem_datafield, attr_code, inner_text):
-        """Create child element 'subfield' of elem_datafield including
+    def _create_subfield(self, parent, attr_code, inner_text):
+        """Create child element 'subfield' of parent including
         attr_code and inner_text, and return it.
         """
         subfield = etree.SubElement(
-            elem_datafield, "subfield", {"code": attr_code})
+            parent, "subfield", {"code": attr_code})
         subfield.text = inner_text
         return subfield
 
@@ -92,17 +92,17 @@ class Mapper:
         """Map LDAP records to MARC 21 authority records (XML).
         Return the list of root elements.
         """
-        self.root = self._create_root()
-        self.roots.append(self.root)
+        current_root = self._create_root()
+        self.roots.append(current_root)
         record_size_counter = 0
 
         for record in ldap_records:
             if record_size_counter == self.record_size:
-                self.root = self._create_root()
-                self.roots.append(self.root)
+                current_root = self._create_root()
+                self.roots.append(current_root)
                 record_size_counter = 0  # reset counter
             record_size_counter += 1
-            self.record = self._create_record()
+            current_record = self._create_record(current_root)
             for attr_key in self.mapper_dict.keys():
                 marc_id = self.mapper_dict[attr_key]
                 marc_tag, marc_ind1, marc_ind2, marc_code = \
@@ -115,7 +115,7 @@ class Mapper:
                     pass
 
                 elem_datafield = self._create_datafield(
-                    marc_tag, marc_ind1, marc_ind2)
+                    current_record, marc_tag, marc_ind1, marc_ind2)
 
                 # add prefixes for specific codes
                 if marc_id == "035__a":

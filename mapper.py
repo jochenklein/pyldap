@@ -7,10 +7,10 @@ class Mapper:
     """Map LDAP records to MARC 21 authority records in XML sctructure.
     MARC 21 authority reference: http://www.loc.gov/marc/authority/
     """
-    def __init__(self, record_size=500):
+    def __init__(self):
         """Initialize the mapper properties."""
         self.roots = []  # contain all root elements
-        self.record_size = record_size  # amount of record elements in root
+        self.records = []  # contain all (mapped) MARC records
         self.mapper_dict = {  # mapping definition LDAP to MARC 21 authority
             "givenName": "1000_a",
             "sn": "1001_a",
@@ -47,14 +47,18 @@ class Mapper:
         return etree.Element(
             "collection", {"xmlns": "http://www.loc.gov/MARC21/slim"})
 
-    def _create_record(self, parent):
-        """Create child element 'record' of parent.
+    def _create_record(self, parent=None):
+        """Create record element.
 
-        :return: record element, child of parent
+        :param elem parent: parent of record element (optional)
+        :return: record element
         """
-        return etree.SubElement(parent, "record")
+        if parent:
+            return etree.SubElement(parent, "record")
+        else:
+            return etree.Element("record")
 
-    def _create_controlfield(self, parent, attr_tag, inner_text):
+    def _create_controlfield(self, parent, attr_tag, inner_text=None):
         """Create child element 'controlfield' of parent.
 
         :param elem parent: parent element, usually 'collection'
@@ -62,7 +66,8 @@ class Mapper:
         """
         controlfield = etree.SubElement(parent, "controlfield", {
             "tag": attr_tag})
-        controlfield.text = inner_text
+        if inner_text:
+            controlfield.text = inner_text
         return controlfield
 
     def _create_datafield(
@@ -98,54 +103,83 @@ class Mapper:
         subfield.text = inner_text
         return subfield
 
-    def map_ldap_records(self, ldap_records):
-        """Map LDAP records to MARC 21 authority records (XML).
+    def _attach_records(self, record_size=500):
+        """Attach record elements to root element(s).
 
-        :return: list of root elements containg N record elements,
-            N = record_size
+        :return : list of root elements
         """
+        # append all record elements to one root element
+        if record_size <= 0:
+            record_size = -1
+
+        # append records to root element(s) depending on record_size
         current_root = self._create_root()
         self.roots.append(current_root)
         record_size_counter = 0
 
-        for record in ldap_records:
-            if record_size_counter == self.record_size:
+        for record in self.records:
+            if record_size_counter == record_size:
                 current_root = self._create_root()
                 self.roots.append(current_root)
                 record_size_counter = 0  # reset counter
             record_size_counter += 1
-            current_record = self._create_record(current_root)
-            for attr_key in self.mapper_dict.keys():
-                marc_id = self.mapper_dict[attr_key]
-                marc_tag, marc_ind1, marc_ind2, marc_code = \
-                    self._split_marc_id(marc_id)
+            current_root.append(record)
 
-                # in case `attr_key` doesn't exist in the LDAP record
-                try:
-                    inner_text = self._strip(record[attr_key])
-                except:
-                    pass
-
-                elem_datafield = self._create_datafield(
-                    current_record, marc_tag, marc_ind1, marc_ind2)
-
-                # add prefixes for specific codes
-                if marc_id == "035__a":
-                    inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
-
-                if marc_code:
-                    self._create_subfield(
-                        elem_datafield, marc_code, inner_text)
         return self.roots
 
-    def write_marcxml(self, file="marc_output.xml"):
-        """Write the XML tree to (multiple) file(s).
+    def map_ldap_record(self, ldap_record):
+        """Map LDAP record to MARC 21 authority record (XML).
 
-        :param str file: filename, suffix ('_001', '_002', ...) will be added
+        :return: record elements
+        """
+        record = self._create_record()
+        for attr_key in self.mapper_dict.keys():
+            marc_id = self.mapper_dict[attr_key]
+            marc_tag, marc_ind1, marc_ind2, marc_code = \
+                self._split_marc_id(marc_id)
+
+            # in case `attr_key` doesn't exist in the LDAP record
+            try:
+                # type(value of attribute): list
+                inner_text = self._strip(ldap_record[attr_key])
+            except:
+                pass
+
+            elem_datafield = self._create_datafield(
+                record, marc_tag, marc_ind1, marc_ind2)
+
+            # add prefixes for specific codes
+            if marc_id == "035__a":
+                inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
+
+            if marc_code:
+                self._create_subfield(
+                    elem_datafield, marc_code, inner_text)
+
+        return record
+
+    def map_ldap_records(self, ldap_records):
+        """Map LDAP records to MARC 21 authority records (XML).
+
+        :return: list of record elements
+        """
+        for record in ldap_records:
+            self.records.append(self.map_ldap_record(record))
+
+        return self.records
+
+    def write_marcxml(
+      self, record_size=500, file="marc_output.xml"):
+        """Write the XML tree to (multiple) file(s). Each XML file contains
+        one root element (default 'collection') containing record_size
+        record elements.
+
+        :param str file: filename, suffix ('_000', '_001', ...) will be added
         """
         filename, file_extension = os.path.splitext(file)
+        self._attach_records(record_size)
 
-        # multiple file output
+        # (multiple) file output
         for i, root in enumerate(self.roots):
             with open("%s_%03d.xml" % (filename, i), "w") as f:
                 f.write(etree.tostring(root, pretty_print=True))

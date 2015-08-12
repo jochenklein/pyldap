@@ -55,9 +55,9 @@ print "Entries found: {0}, Time [seconds]: {1}.{2}".format(
     len(all_results), t_final.seconds, t_final.microseconds/1000)
 
 if options.exportxml:
-    mapper = Mapper(options.recordsize)  # mapper with given record size
+    mapper = Mapper()
     mapper.map_ldap_records(all_results)
-    mapper.write_marcxml(options.exportxml)
+    mapper.write_marcxml(options.recordsize, options.exportxml)
 
 if options.exportjson:
     with open(options.exportjson, "w") as f:

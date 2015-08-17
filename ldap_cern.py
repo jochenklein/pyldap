@@ -4,7 +4,7 @@ from ldap.controls import SimplePagedResultsControl
 
 CFG_CERN_LDAP_URI = "ldap://xldap.cern.ch:389"
 CFG_CERN_LDAP_BASE = "OU=Users,OU=Organic Units,DC=cern,DC=ch"
-CFG_LDAP_SEARCHFILTER = r"(objectClass=*)"
+CFG_LDAP_SEARCHFILTER = r"(&(objectClass=*)(employeeType=Primary))"
 CFG_LDAP_ATTRLIST = [
     "givenName",
     "sn",

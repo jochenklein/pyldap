@@ -1,10 +1,10 @@
 import datetime
 from optparse import OptionParser
-import json
-from dictdiffer import diff, patch
 from os.path import isfile
+import json
 import ldap_cern
 from mapper import Mapper
+import utils
 
 parser = OptionParser()
 parser.add_option(
@@ -60,30 +60,25 @@ if options.exportxml:
     mapper.write_marcxml(options.recordsize, options.exportxml)
 
 if options.exportjson:
-    with open(options.exportjson, "w") as f:
-        json.dump(all_results, f)
+    utils.export_json(all_results, options.exportjson)
 
 if options.update:
-    if not isfile(options.update):
-        print "updating failed. file '%s' not found" % options.update
-    with open(options.update) as f:
-        stored = json.load(f)
-    result = diff(all_results, stored)
-    result_list = list(result)
+    if isfile(options.update):
+        with open(options.update) as f:
+            stored = json.load(f)
 
-    if len(result_list):
-        # update saved records
-        valid = {"yes": True, "y": True, "": True, "no": False, "n": False}
-        user_input = raw_input(
-            "%d change(s) found. Update %s? [Y/n]"
-            % (len(result_list), options.update)).lower()
+        records_diff = utils.diff_records(all_results, stored)
+        if len(records_diff):
+            # Update stored json-formatted records
+            utils.export_json(all_results, options.update)
 
-        if user_input in valid:
-            if valid[user_input]:
-                patched = patch(result, stored)
-                with open(options.update, "w") as f:
-                    json.dump(patched, f)
-            else:
-                print "Update cancelled."
+            # Map updated LDAP records
+            mapper = Mapper()
+            mapper.update_ldap_records(records_diff)
+
+            # Write changes to XML
+            mapper.write_marcxml(0, "records_updated.xml")
+        else:
+            print "No changes found."
     else:
-        print "No changes found."
+        print "updating failed. file '%s' not found" % options.update

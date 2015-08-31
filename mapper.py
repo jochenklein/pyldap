@@ -106,6 +106,8 @@ class Mapper:
     def _attach_records(self, record_size=500):
         """Attach record elements to root element(s).
 
+        :param int record_size: record child elements in a root node,
+            if <= 0: append all records to one root node
         :return : list of root elements
         """
         # append all record elements to one root element
@@ -130,9 +132,10 @@ class Mapper:
     def map_ldap_record(self, ldap_record):
         """Map LDAP record to MARC 21 authority record (XML).
 
-        :return: record elements
+        :return: record element
         """
         record = self._create_record()
+        # map each attribute for one record
         for attr_key in self.mapper_dict.keys():
             marc_id = self.mapper_dict[attr_key]
             marc_tag, marc_ind1, marc_ind2, marc_code = \
@@ -142,19 +145,18 @@ class Mapper:
             try:
                 # type(value of attribute): list
                 inner_text = self._strip(ldap_record[attr_key])
+                elem_datafield = self._create_datafield(
+                    record, marc_tag, marc_ind1, marc_ind2)
+
+                # add prefixes for specific codes
+                if marc_id == "035__a":
+                    inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
+
+                if marc_code:
+                    self._create_subfield(
+                        elem_datafield, marc_code, inner_text)
             except:
                 pass
-
-            elem_datafield = self._create_datafield(
-                record, marc_tag, marc_ind1, marc_ind2)
-
-            # add prefixes for specific codes
-            if marc_id == "035__a":
-                inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
-
-            if marc_code:
-                self._create_subfield(
-                    elem_datafield, marc_code, inner_text)
 
         return record
 
@@ -168,12 +170,31 @@ class Mapper:
 
         return self.records
 
+    def update_ldap_records(self, records):
+        """Update LDAP record and add a controlfield if needed.
+
+        :param tuple records: (status, record), where status is 'add',
+            'remove', or 'change'
+        :return: list of record elements
+        """
+        for record in records:
+            r = self.map_ldap_record(record[1])
+            # TODO:
+            # For each record, search CDS for employeeID, example:
+            # cds.search(record[1]["employeeID"][0])
+            # if found: self._create_controlfield(r, "101")
+            self.records.append(r)
+
+        return self.records
+
     def write_marcxml(
       self, record_size=500, file="marc_output.xml"):
         """Write the XML tree to (multiple) file(s). Each XML file contains
         one root element (default 'collection') containing record_size
         record elements.
 
+        :param int record_size: record child elements in a root node,
+            if <= 0: append all records to one root node
         :param str file: filename, suffix ('_000', '_001', ...) will be added
         """
         filename, file_extension = os.path.splitext(file)

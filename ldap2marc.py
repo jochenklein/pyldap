@@ -1,4 +1,3 @@
-import datetime
 from optparse import OptionParser
 from os.path import isfile
 import json
@@ -47,12 +46,8 @@ parser.add_option(
          "to FILE")
 (options, args) = parser.parse_args()
 
-t0 = datetime.datetime.now()
 all_results = ldap_cern.paged_search(options.pagesize)
-t1 = datetime.datetime.now()
-t_final = t1 - t0
-print "Entries found: {0}, Time [seconds]: {1}.{2}".format(
-    len(all_results), t_final.seconds, t_final.microseconds/1000)
+print "Records found: {0}.".format(len(all_results))
 
 if options.exportxml:
     mapper = Mapper()

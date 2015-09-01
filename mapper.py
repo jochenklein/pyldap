@@ -85,8 +85,8 @@ class Mapper:
             attr_ind2 = " "
 
         find = parent.xpath(
-            "datafield[@tag=%s and @ind1='%s' and @ind2='%s']"
-            % (attr_tag, attr_ind1, attr_ind2))
+            "datafield[@tag={0} and @ind1='{1}' and @ind2='{2}']".format(
+                attr_tag, attr_ind1, attr_ind2))
         if not find or repeatable:
             return etree.SubElement(parent, "datafield", OrderedDict({
                 "tag": attr_tag, "ind1": attr_ind1, "ind2": attr_ind2}))
@@ -150,7 +150,7 @@ class Mapper:
 
                 # add prefixes for specific codes
                 if marc_id == "035__a":
-                    inner_text = "AUTHOR|(SzGeCERN)%s" % inner_text
+                    inner_text = "AUTHOR|(SzGeCERN){0}".format(inner_text)
 
                 if marc_code:
                     self._create_subfield(
@@ -202,5 +202,6 @@ class Mapper:
 
         # (multiple) file output
         for i, root in enumerate(self.roots):
-            with open("%s_%03d.xml" % (filename, i), "w") as f:
+            with open("{0}_{1}.xml".format(
+              filename, format(i, "03d")), "w") as f:
                 f.write(etree.tostring(root, pretty_print=True))

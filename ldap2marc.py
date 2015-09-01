@@ -76,4 +76,4 @@ if options.update:
         else:
             print "No changes found."
     else:
-        print "updating failed. file '%s' not found" % options.update
+        print "updating failed. file '{0}' not found".format(options.update)

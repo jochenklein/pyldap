@@ -1,6 +1,7 @@
 from lxml import etree
 from collections import OrderedDict
 import os
+from invenio.search_engine import perform_request_search
 
 
 class Mapper:
@@ -179,10 +180,13 @@ class Mapper:
         """
         for record in records:
             r = self.map_ldap_record(record[1])
-            # TODO:
-            # For each record, search CDS for employeeID, example:
-            # cds.search(record[1]["employeeID"][0])
-            # if found: self._create_controlfield(r, "101")
+            prefix = "AUTHOR|(SzGeCERN)"
+            employeeID = record[1]["employeeID"][0]
+            result = perform_request_search(
+                cc="People",
+                p="035__a:{0}{1}".format(prefix, employeeID))
+            if len(result) == 1:
+                self._create_controlfield(r, "001")
             self.records.append(r)
 
         return self.records
@@ -200,8 +204,13 @@ class Mapper:
         filename, file_extension = os.path.splitext(file)
         self._attach_records(record_size)
 
+        # single file ouput, without suffix
+        if record_size <= 0:
+            with open("{0}.xml".format(filename), "w") as f:
+                f.write(etree.tostring(self.roots[0], pretty_print=True))
         # (multiple) file output
-        for i, root in enumerate(self.roots):
-            with open("{0}_{1}.xml".format(
-              filename, format(i, "03d")), "w") as f:
-                f.write(etree.tostring(root, pretty_print=True))
+        else:
+            for i, root in enumerate(self.roots):
+                with open("{0}_{1}.xml".format(
+                  filename, format(i, "03d")), "w") as f:
+                    f.write(etree.tostring(root, pretty_print=True))

@@ -1,7 +1,7 @@
 from lxml import etree
 from collections import OrderedDict
 import os
-from invenio.search_engine import perform_request_search
+from invenio.search_engine import search_pattern
 
 
 class Mapper:
@@ -182,9 +182,8 @@ class Mapper:
             r = self.map_ldap_record(record[1])
             prefix = "AUTHOR|(SzGeCERN)"
             employeeID = record[1]["employeeID"][0]
-            result = perform_request_search(
-                cc="People",
-                p="035__a:{0}{1}".format(prefix, employeeID))
+            result = search_pattern(
+                p='035__:{0}{1}'.format(prefix, employeeID))
             if len(result) == 1:
                 self._create_controlfield(r, "001")
             self.records.append(r)

@@ -1,9 +1,10 @@
 import argparse
-from os.path import isfile
+from os.path import isfile, abspath
 import json
 import ldap_cern
 from mapper import Mapper
 import utils
+from invenio.bibtask import task_low_level_submission
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -44,6 +45,15 @@ parser.add_argument(
     metavar="FILE",
     help="update stored json-formatted records with current LDAP records "
          "to FILE")
+parser.add_argument(
+    "-i",
+    "--insert",
+    dest="insert",
+    type=str,
+    nargs="+",
+    metavar="FILE",
+    help="insert/upload MARC 21 authority record FILE(s) to CDS using "
+         "bibupload")
 args = parser.parse_args()
 
 all_results = ldap_cern.paged_search(args.pagesize)
@@ -73,7 +83,32 @@ if args.update:
 
             # Write changes to XML
             mapper.write_marcxml(0, "records_updated.xml")
+
+            # Bibupload to CDS
+            f = abspath("records_updated.xml")
+            if isfile(f):
+                task_low_level_submission(
+                    "bibupload",
+                    "ldap2marc",
+                    "-c", f,
+                    "-P", "-1",
+                    "-N", "ldap-author-data")
+            else:
+                print "file '{0}' not found".format(args.update)
+
         else:
             print "No changes found."
     else:
         print "updating failed. file '{0}' not found".format(args.update)
+
+if args.insert:
+    for f in args.insert:
+        if isfile(f):
+            task_low_level_submission(
+                "bibupload",
+                "ldap2marc",
+                "-i", f,
+                "-P", "-1",
+                "-N", "ldap-author-data")
+        else:
+            print "file '{0}' not found".format(args.update)

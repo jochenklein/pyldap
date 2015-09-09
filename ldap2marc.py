@@ -56,15 +56,21 @@ parser.add_argument(
          "bibupload")
 args = parser.parse_args()
 
-all_results = ldap_cern.paged_search(args.pagesize)
-print "Records found: {0}.".format(len(all_results))
+
+def get_records():
+    all_results = ldap_cern.paged_search(args.pagesize)
+    print "Records found: {0}.".format(len(all_results))
+    return all_results
+
 
 if args.exportxml:
+    all_results = get_records()
     mapper = Mapper()
     mapper.map_ldap_records(all_results)
     mapper.write_marcxml(args.recordsize, args.exportxml)
 
 if args.exportjson:
+    all_results = get_records()
     utils.export_json(all_results, args.exportjson)
 
 if args.update:
@@ -72,6 +78,7 @@ if args.update:
         with open(args.update) as f:
             stored = json.load(f)
 
+        all_results = get_records()
         records_diff = utils.diff_records(all_results, stored)
         if len(records_diff):
             # Update stored json-formatted records

@@ -54,6 +54,12 @@ parser.add_argument(
     metavar="FILE",
     help="insert/upload MARC 21 authority record FILE(s) to CDS using "
          "bibupload")
+parser.add_argument(
+    "-c",
+    "--count",
+    dest="count",
+    action="store_true",
+    help="counts all primary LDAP records")
 args = parser.parse_args()
 
 
@@ -119,3 +125,8 @@ if args.insert:
                 "-N", "ldap-author-data")
         else:
             print "file '{0}' not found".format(args.update)
+
+# speed could be improved by changing the CFG_LDAP_ATTRLIST in
+# mapper.py to one attribute only, e.g. employeeID
+if args.count:
+    get_records()

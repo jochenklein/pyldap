@@ -13,12 +13,23 @@ class Mapper:
         self.roots = []  # contain all root elements
         self.records = []  # contain all (mapped) MARC records
         self.mapper_dict = {  # mapping definition LDAP to MARC 21 authority
+            "employeeID": "035__a",
             "givenName": "1000_a",
             "sn": "1001_a",
             "displayName": "100__a",
+            "facsimileTelephoneNumber": "371__f",
+            "telephoneNumber": "371__k",
+            "mobile": "371__l",
             "mail": "371__m",
-            "employeeID": "035__a"
-        }
+            "department": "371__d",
+            "cernGroup": "371__g",
+            "description": "371__h",
+            "division": "371__i",
+            "extensionAttribute12": "371__j",
+            "cernInstituteName": "371__0",
+            "extensionAttribute11": "371__1",
+
+        }    # see CFG_LDAP_ATTRLIST in ldap_cern.py
 
     def _strip(self, obj, strip="['']"):
         """Using the default strip function.

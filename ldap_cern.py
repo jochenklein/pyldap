@@ -6,11 +6,21 @@ CFG_CERN_LDAP_URI = "ldap://xldap.cern.ch:389"
 CFG_CERN_LDAP_BASE = "OU=Users,OU=Organic Units,DC=cern,DC=ch"
 CFG_LDAP_SEARCHFILTER = r"(&(objectClass=*)(employeeType=Primary))"
 CFG_LDAP_ATTRLIST = [
+    "employeeID",
     "givenName",
     "sn",
-    "mail",
     "displayName",
-    "employeeID"]
+    "facsimileTelephoneNumber",
+    "telephoneNumber",
+    "mobile",
+    "mail",
+    "department",
+    "cernGroup",
+    "description",
+    "division",
+    "extensionAttribute12",
+    "cernInstituteName",
+    "extensionAttribute11"]  # see mapper_dict in mapper.py
 
 
 class LDAPError(Exception):

@@ -31,13 +31,6 @@ class Mapper:
 
         }    # see CFG_LDAP_ATTRLIST in ldap_cern.py
 
-    def _strip(self, obj, strip="['']"):
-        """Using the default strip function.
-
-        :return: stripped string
-        """
-        return str(obj).strip(strip)
-
     def _split_marc_id(self, marc_id):
         """Split MARC 21 identifier which is defined in the mapper_dict.
 
@@ -156,7 +149,8 @@ class Mapper:
             # in case `attr_key` doesn't exist in the LDAP record
             try:
                 # type(value of attribute): list
-                inner_text = self._strip(ldap_record[attr_key])
+                inner_text = ldap_record[attr_key][0]  # always 1 element only
+                # inner_text = self._strip(ldap_record[attr_key])
                 elem_datafield = self._create_datafield(
                     record, marc_tag, marc_ind1, marc_ind2)
 

@@ -35,6 +35,5 @@ def diff_records(list1, list2):
 
 
 def export_json(records, file="records.json"):
-    print file
     with open(file, "w") as f:
         json.dump(records, f)

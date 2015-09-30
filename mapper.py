@@ -1,7 +1,7 @@
 from lxml import etree
 from collections import OrderedDict
 import os
-from invenio.search_engine import search_pattern
+# from invenio.search_engine import search_pattern
 
 
 class Mapper:
@@ -76,7 +76,7 @@ class Mapper:
         return controlfield
 
     def _create_datafield(
-      self, parent, attr_tag, attr_ind1, attr_ind2, repeatable=False):
+      self, parent, attr_tag, attr_ind1=" ", attr_ind2=" ", repeatable=False):
         """Create child element 'datafield', add it to the record element.
 
         :param elem parent: parent element, usually 'record'
@@ -164,6 +164,12 @@ class Mapper:
             except:
                 pass
 
+        # additional repeatable datafield for CERN people
+        self._create_subfield(
+            self._create_datafield(record, "980", repeatable=True),
+            "a",
+            "CERN People")
+
         return record
 
     def map_ldap_records(self, ldap_records):
@@ -185,12 +191,13 @@ class Mapper:
         """
         for record in records:
             r = self.map_ldap_record(record[1])
-            prefix = "AUTHOR|(SzGeCERN)"
-            employeeID = record[1]["employeeID"][0]
-            result = search_pattern(
-                p='035__:{0}{1}'.format(prefix, employeeID))
-            if len(result) == 1:
-                self._create_controlfield(r, "001")
+
+            # create and add specific repeatable datafield to removed records
+            if record[0] is "remove":
+                self._create_subfield(
+                    self._create_datafield(r, "980", repeatable=True),
+                    "a",
+                    "DELETED")
             self.records.append(r)
 
         return self.records

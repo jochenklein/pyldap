@@ -120,9 +120,10 @@ class Mapper:
             record_size = -1
 
         # append records to root element(s) depending on record_size
-        current_root = self._create_root()
-        self.roots.append(current_root)
-        record_size_counter = 0
+        if len(self.records):
+            current_root = self._create_root()
+            self.roots.append(current_root)
+            record_size_counter = 0
 
         for record in self.records:
             if record_size_counter == record_size:

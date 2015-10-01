@@ -103,12 +103,11 @@ if args.update:
                 task_low_level_submission(
                     "bibupload",
                     "ldap2marc",
-                    "-c", f,
+                    "-ri", f,
                     "-P", "-1",
                     "-N", "ldap-author-data")
             else:
                 print "file '{0}' not found".format(args.update)
-
         else:
             print "No changes found."
     else:

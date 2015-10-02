@@ -13,38 +13,41 @@ parser.add_argument(
     dest="pagesize",
     type=int,
     default=250,
-    help="limit LDAP records for each search request to avoid exceeding "
-         "sizelimit [default: %(default)d]")
+    help="limit number of records to be returned from LDAP for each search "
+         "request to avoid exceeding sizelimit [default: %(default)d]")
 parser.add_argument(
     "-r",
     "--recordsize",
     dest="recordsize",
     type=int,
     default=500,
-    help="limit amount of record elements for each XML file and has to be "
-         "combined with `-x FILE` [default: %(default)d]")
+    help="limit number of record elements for each XML file and has to be "
+         "used together with `-x` [default: %(default)d]. For unlimited "
+         "records use 0")
 parser.add_argument(
     "-x",
     "--exportxml",
     dest="exportxml",
     type=str,
     metavar="FILE",
-    help="write to XML FILE(s) based on `recordsize`")
+    help="write to MARCXML FILE(s), number of records each FILE is based on "
+         "RECORDSIZE")
 parser.add_argument(
     "-j",
     "--exportjson",
     dest="exportjson",
     type=str,
     metavar="FILE",
-    help="dump Python dictionary with records to a json-formatted FILE")
+    help="dump records to a json-formatted FILE, used for `-u`, recommended "
+         "using it together with `-x`")
 parser.add_argument(
     "-u",
     "--update",
     dest="update",
     type=str,
     metavar="FILE",
-    help="update stored json-formatted records with current LDAP records "
-         "to FILE")
+    help="compare json-formatted FILE with latest LDAP records and upload it "
+         "to CDS using bibupload -ri")
 parser.add_argument(
     "-i",
     "--insert",
@@ -53,7 +56,7 @@ parser.add_argument(
     nargs="+",
     metavar="FILE",
     help="insert/upload MARC 21 authority record FILE(s) to CDS using "
-         "bibupload")
+         "bibupload -i")
 parser.add_argument(
     "-c",
     "--count",

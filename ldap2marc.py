@@ -65,33 +65,27 @@ parser.add_argument(
     help="counts all primary LDAP records")
 args = parser.parse_args()
 
-
-def get_records():
-    all_results = ldap_cern.paged_search(args.pagesize)
-    print "Records found: {0}.".format(len(all_results))
-    return all_results
-
+if args.exportxml or args.exportjson or args.update or args.count:
+    records = ldap_cern.paged_search(args.pagesize)
+    print "Records found: {0}.".format(len(records))
 
 if args.exportxml:
-    all_results = get_records()
     mapper = Mapper()
-    mapper.map_ldap_records(all_results)
+    mapper.map_ldap_records(records)
     mapper.write_marcxml(args.recordsize, args.exportxml)
 
 if args.exportjson:
-    all_results = get_records()
-    utils.export_json(all_results, args.exportjson)
+    utils.export_json(records, args.exportjson)
 
 if args.update:
     if isfile(args.update):
         with open(args.update) as f:
-            stored = json.load(f)
+            stored_records = json.load(f)
 
-        all_results = get_records()
-        records_diff = utils.diff_records(all_results, stored)
+        records_diff = utils.diff_records(records, stored_records)
         if len(records_diff):
             # Update stored json-formatted records
-            utils.export_json(all_results, args.update)
+            utils.export_json(records, args.update)
 
             # Map updated LDAP records
             mapper = Mapper()
@@ -130,5 +124,5 @@ if args.insert:
 
 # speed could be improved by changing the CFG_LDAP_ATTRLIST in
 # mapper.py to one attribute only, e.g. employeeID
-if args.count:
-    get_records()
+# if args.count:
+    # get_records()

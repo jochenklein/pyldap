@@ -1,7 +1,6 @@
 from lxml import etree
 from collections import OrderedDict
 import os
-# from invenio.search_engine import search_pattern
 
 
 class Mapper:
@@ -27,8 +26,7 @@ class Mapper:
             "division": "371__i",
             "extensionAttribute12": "371__j",
             "cernInstituteName": "371__0",
-            "extensionAttribute11": "371__1",
-
+            "extensionAttribute11": "371__1"
         }    # see CFG_LDAP_ATTRLIST in ldap_cern.py
 
     def _split_marc_id(self, marc_id):
@@ -220,9 +218,11 @@ class Mapper:
         if record_size <= 0:
             with open("{0}.xml".format(filename), "w") as f:
                 f.write(etree.tostring(self.roots[0], pretty_print=True))
+                print "{0} created.".format(file)
         # (multiple) file output
         else:
             for i, root in enumerate(self.roots):
-                with open("{0}_{1}.xml".format(
-                  filename, format(i, "03d")), "w") as f:
+                f = "{0}_{1}.xml".format(filename, format(i, "03d"))
+                with open(f, "w") as f:
                     f.write(etree.tostring(root, pretty_print=True))
+                    print "{0} created".format(f)

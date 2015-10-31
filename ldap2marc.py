@@ -5,6 +5,7 @@ import ldap_cern
 from mapper import Mapper
 import utils
 from invenio.bibtask import task_low_level_submission
+import glob
 
 parser = argparse.ArgumentParser()
 parser.add_argument(
@@ -121,8 +122,3 @@ if args.insert:
                 "-N", "ldap-author-data")
         else:
             print "file '{0}' not found".format(args.update)
-
-# speed could be improved by changing the CFG_LDAP_ATTRLIST in
-# mapper.py to one attribute only, e.g. employeeID
-# if args.count:
-    # get_records()
